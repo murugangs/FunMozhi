@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles01.css">
+    <script src="jquery-1.11.2.js"></script>
+    <script src="Funmozhidata.js"></script>
+</head>
+<body>
+
+    <h2>Learn a Lanuage from YouTube videos.</h2>
+    
+    <h4>This is a POC for learning Spanish via a sitcom 
+        using both Spanish and English as subtitles. 
+        This can be applied to learn any (human) language :)</h4>
+
+
+<h2>Select a video:</h2>
+<select name="" id="mediasDropDown">
+    <option value="0" disabled selected>Select a video...</option>
+</select>
+
+<br>
+<div>Happy learning :)</div>
+<br>
+
+<div class="row">
+  <div id="leftbox" style="background-color:#aaa;">
+    <h2>Column 1</h2>
+    <p>Some text..</p>
+  </div>
+  <div id="rightbox">
+    <div id="rightbox-header"  >Transcript</div>
+    <div id="rightbox-content"></div>
+  </div>
+
+  <div class="column3" style="background-color:#ddd;">
+    © 2009 Murugan Govindasamy.
+  </div>
+</div>
+
+<script>
+    // 2. This code loads the IFrame Player API code asynchronously.
+    var tag = document.createElement('script');
+
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // 3. This function creates an <iframe> (and YouTube player)
+    //    after the API code downloads.
+    var player;
+
+    // we don't want a default video to be loaded while page appears...
+    //  videoId: 'Dfb9-ZTCA-E', 
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('leftbox', {
+        height: '100%',
+        width: '100%',
+      
+        events: {
+            'onStateChange' : onPlayerStateChange
+        }            
+        });
+    }
+
+    // // 4. The API will call this function when the video player is ready.
+    // function onPlayerReady(event) {
+    //     event.target.playVideo();
+    // }
+
+    // // 5. The API calls this function when the player's state changes.
+    // //    The function indicates that when playing a video (state=1),
+    // //    the player should play for six seconds and then stop.
+    function onPlayerStateChange(event) {
+
+        if (event.data == YT.PlayerState.PLAYING){
+            setScrollTranscript()
+        } else if(event.data == YT.PlayerState.PAUSED || 
+            event.data == YT.PlayerState.PAUSED)
+        {
+            clearInterval(idScrollingTranscript)
+        }
+    }
+    var idScrollingTranscript;
+    
+    function setScrollTranscript(){
+        idScrollingTranscript = setInterval(() => {
+            scrollTranscript();
+        }, 1000);
+    }
+
+    var timeline1 = []; //['00:08', '00:14', '00:19', '00:26', '01:26', '01:32', '01:41', '01:46', '01:52', '01:54', '01:55', '02:02', '02:08', '02:15', '02:22', '02:32', '02:39', '02:46', '02:56', '03:04', '03:09', '03:18', '03:24', '03:29', '03:33', '03:39', '03:49', '03:59', '04:03', '04:07', '04:19', '04:23', '04:33', '04:38', '04:48', '05:08', '05:13', '05:24', '05:29', '05:32', '05:44', '05:54', '06:14', '06:21', '06:32', '06:37', '06:50', '06:54', '07:01', '07:13', '07:19', '07:26', '07:29', '07:33', '07:55', '08:05', '08:11', '08:17', '08:23', '08:31', '08:42', '09:31', '09:36', '09:48', '09:55', '10:07', '10:13', '10:18', '10:27', '10:35', '10:41', '10:48', '10:57', '11:10', '11:17', '11:21', '11:30', '11:38', '11:52', '11:58', '12:06', '12:09', '12:13', '12:19', '12:34', '12:44', '12:54', '13:01', '13:10', '13:17', '13:22', '13:26', '13:36', '13:46', '13:51', '13:56', '14:05', '14:11', '15:10', '15:19', '15:26', '15:38', '15:44', '15:52', '15:57', '16:02', '16:07', '16:15', '16:23', '16:33', '16:50', '16:55', '17:03', '17:09', '17:22', '17:31', '17:35', '17:38', '17:45', '17:59', '18:03', '18:11', '18:15', '18:24', '18:27', '18:37', '18:45', '18:51', '18:53', '19:01', '19:22', '19:25', '19:31', '19:44', '19:56', '19:59', '20:16', '20:20', '20:25', '20:35', '20:40', '20:45', '20:53', '21:03', '21:16', '21:22', '21:28', '21:35', '21:44', '21:50', '21:57', '21:59', '22:14', '22:20', '22:25', '22:42', '22:45', '22:49', '22:52', '23:00', '23:03', '23:09', '23:17', '23:26', '23:29', '23:49', '23:56', '24:02']
+    var previousTSDiv;
+
+    var mediaQueryApplied = false;
+
+    function scrollTranscript(){
+        
+        var timeStamp = getTimeStamp();
+        var index = timeline1.indexOf(timeStamp);
+
+        if ( index != -1 ){
+            // We need to find the div and its parent make them selected..
+            // console.log('timestamp: ' + timeStamp);
+            if (previousTSDiv) previousTSDiv.removeClass('active');
+
+            var currentTSDiv = $(".caption-time:contains('" + timeStamp + "')").parent();
+            currentTSDiv.addClass('active');
+
+            //debugger;
+            var container = $('#rightbox-content');
+
+            // This allows to keep the current item in the center.
+            var halfContainerHeight =  100;
+            if (mediaQueryApplied == false){
+                halfContainerHeight = container.height() / 2;
+            }
+             
+            var containerScrollTop = container.scrollTop() 
+                                    - container.offset().top
+                                    + currentTSDiv.offset().top
+                                    - halfContainerHeight;
+            //console.log('child div height: ' + currentTSDiv.offset().top);
+            //console.log('container top: ' + )
+            container.scrollTop(containerScrollTop);
+
+            previousTSDiv = currentTSDiv 
+        }
+
+    }
+
+    function getTimeStamp(){
+        var playerTime = Math.floor(player.getCurrentTime());
+        var ts = "";
+
+        if (playerTime <= 60){
+            minutes = 0;
+            seconds = playerTime;
+            //ts = '00:' + playerTime;
+        } else {
+            var minutes = Math.floor( playerTime / 60 );
+            var seconds = playerTime - (minutes * 60);
+        }        
+
+        // TODO: if it is more than 60... we need to work it out.
+        if ( minutes < 10 ) 
+            ts = '0' + minutes;
+        else
+            ts = minutes;
+        
+        ts += ':' 
+
+        if ( seconds < 10 )
+            ts += '0' + seconds;
+        else 
+            ts += seconds;
+
+        //console.log('timestamp: ' + ts);
+        return ts;
+    }
+
+    var currentMedia = {};
+    var currentTranscripts = {};
+
+    function hanldeMediaChange(mediaKey){
+
+        // Load the Transcripts from the collection..
+        mediaTranscripts.every(function(item){
+            if (mediaKey == item.MediaKey){
+                currentMedia = item;
+                return false;
+            } else 
+                return true;
+        });
+
+        var transacriptDiv = '';
+        timeline1 = [];
+
+        currentTranscripts = currentMedia.Transcripts;
+        currentTranscripts.forEach( function(titem){
+            transacriptDiv += `<div class='caption-container'> 
+                                    <div class='caption-time'>${titem.Timestamp}</div>
+                                    <div class='caption-content'>
+                                        <div>${titem.PrimaryLanguageText}</div>
+                                        <div class='caption-content-english'>${titem.SecondaryLanguageText}</div>
+                                    </div>    
+                                </div>`;
+
+            // Also push the timestamp to the local variable, so that it will be 
+            // easier to work with..
+            timeline1.push(titem.Timestamp);
+
+        });
+        $('#rightbox-content').html(transacriptDiv);
+
+        // Load the video.
+        var videoid = currentMedia.MediaId;  //'6v0Q-2IhqrE';
+        if (player){
+            player.loadVideoById({videoId: videoid});
+        }
+        
+        // set the timeline for current media..
+
+    }
+
+    // The default media to be loaded..
+    // hanldeMediaChange(1);
+
+    medias.forEach(function(item, index){
+        //console.log('Key: ' + item.MediaKey +', value: ' + item.MediaName );
+
+        // This adds lots of unwanted empty characters in the DOM
+        // $('#mediasDropDown').append( `<option value="${item.MediaKey}"> 
+        //                                     ${item.MediaName}
+        //                                 </option>` );
+        
+        $('#mediasDropDown').append(new Option(item.MediaName, item.MediaKey));
+
+    })
+
+    $('#mediasDropDown').on('change', function(){
+
+        var selectedText = $(this).find(':selected').text();
+        var selectedVal =  $(this).find(':selected').val();
+        hanldeMediaChange(selectedVal);
+        ///console.log(selectedText + ' : ' + selectedVal);
+
+        //player.loadVideoById({videoId: '6v0Q-2IhqrE'});
+
+        // $('.column3').html(`<div class='caption-container'>
+        //                         <div class='caption-time'>24:02</div>
+        //                         <div class='caption-content'>
+        //                             <div>para él? ¡No te lo pierdas!</div>
+        //                             <div class='caption-content-english'>for him? Don't miss it!</div>
+        //                         </div>
+        //                     </div>`);
+    });
+
+    function handleMediaQueryChange(x){
+        if (x.matches){
+            mediaQueryApplied = true;
+        } else {
+            mediaQueryApplied = false;
+        }
+
+        console.log('media query applied: ' + mediaQueryApplied);
+    }
+
+    var mq = window.matchMedia("(max-width: 825px)");
+    // The very first time, the browser may be in full widht or small... so 
+    // we need to call the method very first time.
+    handleMediaQueryChange(mq);
+
+    mq.addListener(handleMediaQueryChange);
+
+</script>
+
+</body>
+</html>
